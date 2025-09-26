@@ -45,7 +45,7 @@ with st.sidebar:
     st.header("Configuration")
     existing_key = get_api_key()
     user_key = st.text_input("OpenAI API Key", value=existing_key or "", type="password")
-    model = st.text_input("Model", value=os.getenv("OPENAI_MODEL", "gpt-4o-mini"))
+    model = st.text_input("Model", value=os.getenv("OPENAI_MODEL", "gpt-5"))
     if user_key and user_key != existing_key:
         os.environ["OPENAI_API_KEY"] = user_key
     if model:
@@ -85,7 +85,7 @@ with st.sidebar:
     year = st.number_input("Year", min_value=0, max_value=3000, step=1, value=0)
     year_val = int(year) if year else None
     st.markdown("---")
-    max_rows = st.slider("Max rows in prompt", min_value=5, max_value=100, value=25, step=5)
+    max_rows = st.slider("Max rows in prompt", min_value=5, max_value=1000, value=250, step=5)
 
 df: pd.DataFrame | None = None
 # Priority: uploaded file (if provided), else selected repository CSV files.
@@ -123,7 +123,7 @@ if df is not None:
         except TypeError:
             return st.dataframe(data, use_container_width=True)  # older Streamlit
 
-    _dataframe_full_width(df.head(50))
+    _dataframe_full_width(df.head(500))
     st.markdown("---")
     st.subheader("Ask a Question")
     question = st.text_area("Your question about the data", placeholder="e.g. What species were found at volkstuinen Amstelglorie?", height=100)

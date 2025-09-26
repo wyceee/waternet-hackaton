@@ -19,7 +19,7 @@ import os
 
 # The global client is lazily initialised via init_openai to avoid side effects
 client: OpenAI | None = None
-MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")  # allow override via env
+MODEL = os.getenv("OPENAI_MODEL", "gpt-5")  # allow override via env
 
 
 def init_openai(api_key: str) -> None:

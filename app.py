@@ -62,8 +62,21 @@ with st.sidebar:
     st.markdown("---")
     st.caption("Upload a custom CSV (semicolon separated) or use the bundled sample.")
     uploaded = st.file_uploader("CSV Upload", type=["csv"])
-    default_path = "HB100sampled.csv"
-    use_default = st.checkbox(f"Use default file: {default_path}", value=uploaded is None)
+    # Automatically discover CSV files in the repository root
+    try:
+        csv_files = [f for f in os.listdir('.') if f.lower().endswith('.csv')]
+    except Exception:
+        csv_files = []
+    st.caption("Detected repository CSV files (select one or more):")
+    selected_files: list[str] = []
+    # Default: if no upload, preselect the first discovered file
+    for idx, fname in enumerate(csv_files):
+        default_checked = uploaded is None and idx == 0
+        if st.checkbox(fname, value=default_checked, key=f"csv_select_{fname}"):
+            selected_files.append(fname)
+    if not csv_files:
+        st.info("No CSV files found in repository root.")
+    st.caption("If multiple files are selected they will be concatenated (row-wise).")
     st.markdown("---")
     st.subheader("Manual Filters")
     species = st.text_input("Species contains")
@@ -75,18 +88,29 @@ with st.sidebar:
     max_rows = st.slider("Max rows in prompt", min_value=5, max_value=100, value=25, step=5)
 
 df: pd.DataFrame | None = None
-if 'uploaded' in locals() and uploaded and not use_default:
+# Priority: uploaded file (if provided), else selected repository CSV files.
+if 'uploaded' in locals() and uploaded is not None:
     try:
         df = cached_upload_csv(uploaded)
     except Exception as e:
         st.error(f"Failed to read uploaded file: {e}")
-elif use_default and os.path.exists("HB100sampled.csv"):
-    try:
-        df = cached_load_csv("HB100sampled.csv")
-    except Exception as e:
-        st.error(f"Failed to load default CSV: {e}")
+elif selected_files:
+    loaded_frames = []
+    for fpath in selected_files:
+        try:
+            loaded_frames.append(cached_load_csv(fpath))
+        except Exception as e:
+            st.error(f"Failed to load {fpath}: {e}")
+    if loaded_frames:
+        if len(loaded_frames) == 1:
+            df = loaded_frames[0]
+        else:
+            try:
+                df = pd.concat(loaded_frames, ignore_index=True)
+            except Exception as e:
+                st.error(f"Failed to concatenate selected CSVs: {e}")
 else:
-    st.info("Provide a CSV file to begin.")
+    st.info("Upload a CSV or select at least one detected repository CSV.")
 
 if df is not None:
     st.subheader("Dataset Preview")

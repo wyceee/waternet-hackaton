@@ -84,7 +84,7 @@ def llm_suggest_filters(question: str, df_columns: List[str]) -> Dict[str, Any]:
     )
     resp = _client.chat.completions.create(
         model=MODEL,
-        temperature=0.1,
+        temperature=1.0,
         messages=[
             {"role": "system", "content": system},
             {"role": "user", "content": msg_user},
@@ -135,7 +135,7 @@ def ask_llm(prompt: str) -> str:
     _client = _require_client()
     resp = _client.chat.completions.create(
         model=MODEL,
-        temperature=0.1,
+        temperature=1.0,
         messages=[
             {"role": "system", "content": "Be concise and factual."},
             {"role": "user", "content": prompt},

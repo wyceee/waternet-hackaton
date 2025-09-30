@@ -1,5 +1,3 @@
-"""Streamlit UI for exploring the water quality CSV with LLM assistance."""
-
 import os
 import pandas as pd
 import streamlit as st
@@ -12,7 +10,7 @@ from water_core import (
     ask_llm,
 )
 
-st.set_page_config(page_title="Water Quality QA", layout="wide")
+st.set_page_config(page_title="Waternet Data Explorer", layout="wide")
 st.title("💧 Waternet Data Explorer")
 
 @st.cache_data(show_spinner=False)
@@ -62,20 +60,31 @@ with st.sidebar:
     st.markdown("---")
     st.caption("Upload a custom CSV (semicolon separated) or use the bundled sample.")
     uploaded = st.file_uploader("CSV Upload", type=["csv"])
-    # Automatically discover CSV files in the repository root
+    # Automatically discover CSV files in data directory (fallback: repository root)
+    data_dir = os.getenv("DATA_DIR", "data")
+    csv_files: list[str] = []
     try:
-        csv_files = [f for f in os.listdir('.') if f.lower().endswith('.csv')]
+        if os.path.isdir(data_dir):
+            for fname in os.listdir(data_dir):
+                if fname.lower().endswith('.csv'):
+                    csv_files.append(os.path.join(data_dir, fname))
+        else:
+            for fname in os.listdir('.'):
+                if fname.lower().endswith('.csv'):
+                    csv_files.append(fname)
     except Exception:
         csv_files = []
-    st.caption("Detected repository CSV files (select one or more):")
+    st.caption("Detected CSV files (select one or more):")
     selected_files: list[str] = []
     # Default: if no upload, preselect the first discovered file
-    for idx, fname in enumerate(csv_files):
+    for idx, fpath in enumerate(csv_files):
+        label = os.path.relpath(fpath)
+        safe_key = label.replace('/', '_')
         default_checked = uploaded is None and idx == 0
-        if st.checkbox(fname, value=default_checked, key=f"csv_select_{fname}"):
-            selected_files.append(fname)
+        if st.checkbox(label, value=default_checked, key=f"csv_select_{safe_key}"):
+            selected_files.append(fpath)
     if not csv_files:
-        st.info("No CSV files found in repository root.")
+        st.info(f"No CSV files found in '{data_dir}' or repository root.")
     st.caption("If multiple files are selected they will be concatenated (row-wise).")
     st.markdown("---")
     st.subheader("Manual Filters")
@@ -115,13 +124,11 @@ else:
 if df is not None:
     st.subheader("Dataset Preview")
     st.write(f"Total rows: {len(df):,}")
-    # Streamlit deprecation: use_container_width -> width ('stretch'|'content').
-    # Keep backward compatibility for older versions by falling back if needed.
     def _dataframe_full_width(data):
         try:
             return st.dataframe(data, width="stretch")
         except TypeError:
-            return st.dataframe(data, use_container_width=True)  # older Streamlit
+            return st.dataframe(data, use_container_width=True)
 
     _dataframe_full_width(df.head(500))
     st.markdown("---")

@@ -1,4 +1,14 @@
+### Virtual environments
 venv
 .venv
-openai.keyopenai.key
+
+### macOS metadata
+.DS_Store
+
+### Python cache / bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+
+### Secrets / keys
 openai.key

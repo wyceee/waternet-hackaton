@@ -1,4 +1,5 @@
-![alt text](image.png)
+# Waternet Data Explorer
+![alt text](assets/image.png)
 ## Setup
 
 ```bash

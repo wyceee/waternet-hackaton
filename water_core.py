@@ -1,12 +1,11 @@
 """Core water quality data + LLM helper functions.
 
-Separated from the original script so we can reuse it in a CLI script
-(`test.py`) and a Streamlit UI (`app.py`).
+Minimal usage example:
 
-Usage pattern:
     from water_core import init_openai, ask_about_water_data
     init_openai(api_key)
     answer = ask_about_water_data("HB100sampled.csv", "Your question")
+    print(answer)
 """
 
 from __future__ import annotations

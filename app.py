@@ -13,7 +13,7 @@ from water_core import (
 )
 
 st.set_page_config(page_title="Water Quality QA", layout="wide")
-st.title("💧 Water Quality Data Explorer + LLM")
+st.title("💧 Waternet Data Explorer")
 
 @st.cache_data(show_spinner=False)
 def cached_load_csv(path: str) -> pd.DataFrame:
